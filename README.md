@@ -20,7 +20,7 @@
    pip3 install aiohttp aiofiles pyyaml
    ```
 
-   # Node.js packages (create package.json first)
+   - Node.js packages (create package.json first)
    ```bash
    npm install express cors body-parser axios ws jsonwebtoken speakeasy qrcode
    ```
@@ -56,7 +56,7 @@
 }
 ```
 
-/*
+
 4. FILE STRUCTURE:
    
    security-dashboard/
