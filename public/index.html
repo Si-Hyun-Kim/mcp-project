@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Advanced Security Operations Center</title>
+      <link rel="stylesheet" href="./styles.css">
+      <script type="text/javascript" src="./script.js"></script>
+  </head>
+    <body>
+        <!-- Login Screen -->
+        <div class="login-container" id="loginContainer">
+            <div class="login-bg"></div>
+            <div class="login-box">
+                <div class="login-logo">
+                    <div class="shield">🛡️</div>
+                    <h1 class="login-title">Security Operations Center</h1>
+                    <p class="login-subtitle">Advanced Threat Monitoring System</p>
+                </div>
+                <form class="login-form" id="loginForm">
+                    <div class="form-group">
+                        <label class="form-label">Username</label>
+                        <input type="text" class="form-input" id="username" placeholder="admin" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-input" id="password" placeholder="••••••••" required>
+                    </div>
+                    <div class="mfa-container" id="mfaContainer">
+                        <div class="mfa-title">Enter verification code</div>
+                        <div class="mfa-code-inputs">
+                            <input type="text" class="mfa-input" maxlength="1" data-index="0">
+                            <input type="text" class="mfa-input" maxlength="1" data-index="1">
+                            <input type="text" class="mfa-input" maxlength="1" data-index="2">
+                            <input type="text" class="mfa-input" maxlength="1" data-index="3">
+                            <input type="text" class="mfa-input" maxlength="1" data-index="4">
+                            <input type="text" class="mfa-input" maxlength="1" data-index="5">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-login">Sign In</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main Dashboard -->
+        <div class="dashboard" id="dashboard">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <div class="logo">
+                        <div class="logo-icon">🛡️</div>
+                        <span>SOC Dashboard</span>
+                    </div>
+                    <nav class="nav-tabs">
+                        <button class="nav-tab active" data-page="overview">Overview</button>
+                        <button class="nav-tab" data-page="alerts">Alerts</button>
+                        <button class="nav-tab" data-page="rules">IPS Rules</button>
+                        <button class="nav-tab" data-page="reports">Reports</button>
+                        <button class="nav-tab" data-page="comparison">Attack vs Defense</button>
+                    </nav>
+                </div>
+                <div class="header-right">
+                    <div class="status-indicator">
+                        <div class="status-dot"></div>
+                        <span>MCP Connected</span>
+                    </div>
+                    <button class="btn-logout" onclick="logout()">Logout</button>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Overview Page -->
+                <div class="page active" id="page-overview">
+                    <!-- Stats -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Total Alerts</div>
+                            <div class="stat-value" id="totalAlerts">2,847</div>
+                            <div class="stat-change positive">
+                                <span>↑</span>
+                                <span>12.5% from yesterday</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Blocked Attacks</div>
+                            <div class="stat-value" id="blockedAttacks">143</div>
+                            <div class="stat-change negative">
+                                <span>↓</span>
+                                <span>8.3% from yesterday</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Critical Threats</div>
+                            <div class="stat-value" id="criticalThreats">7</div>
+                            <div class="stat-change positive">
+                                <span>↑</span>
+                                <span>2 new threats</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Active Rules</div>
+                            <div class="stat-value" id="activeRules">524</div>
+                            <div class="stat-change positive">
+                                <span>↑</span>
+                                <span>15 rules added</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Real-time Chart -->
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h2 class="chart-title">Attack Timeline</h2>
+                            <div class="chart-options">
+                                <button class="chart-option active" data-range="1h">1H</button>
+                                <button class="chart-option" data-range="24h">24H</button>
+                                <button class="chart-option" data-range="7d">7D</button>
+                                <button class="chart-option" data-range="30d">30D</button>
+                            </div>
+                        </div>
+                        <canvas id="attackChart"></canvas>
+                    </div>
+
+                    <!-- Recent Alerts Preview -->
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h2 class="table-title">Recent Alerts</h2>
+                            <button class="filter-btn" onclick="switchPage('alerts')">View All →</button>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Source IP</th>
+                                    <th>Attack Type</th>
+                                    <th>Severity</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentAlertsTable">
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Alerts Page -->
+                <div class="page" id="page-alerts">
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h2 class="table-title">All Security Alerts</h2>
+                            <div class="table-filters">
+                                <input type="text" class="filter-input" placeholder="Search IP, Port, or Signature..." id="alertSearch">
+                                <select class="filter-input" id="severityFilter">
+                                    <option value="">All Severities</option>
+                                    <option value="critical">Critical</option>
+                                    <option value="high">High</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="low">Low</option>
+                                </select>
+                                <select class="filter-input" id="timeFilter">
+                                    <option value="1h">Last Hour</option>
+                                    <option value="24h">Last 24 Hours</option>
+                                    <option value="7d">Last 7 Days</option>
+                                    <option value="30d">Last 30 Days</option>
+                                </select>
+                                <button class="filter-btn" onclick="applyFilters()">Apply Filters</button>
+                            </div>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Source IP</th>
+                                    <th>Destination IP</th>
+                                    <th>Port</th>
+                                    <th>Protocol</th>
+                                    <th>Attack Signature</th>
+                                    <th>Severity</th>
+                                    <th>Count</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="alertsTable">
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- IPS Rules Page -->
+                <div class="page" id="page-rules">
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h2 class="chart-title">Suricata IPS Rules Management</h2>
+                            <button class="filter-btn" onclick="addNewRule()">+ Add Rule</button>
+                        </div>
+                        <div class="rules-grid" id="rulesGrid">
+                            <!-- Dynamic rules -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reports Page -->
+                <div class="page" id="page-reports">
+                    <div class="report-generator">
+                        <h2 class="chart-title">Generate Security Report</h2>
+                        <div class="report-form">
+                            <div class="form-group-report">
+                                <label class="form-label-report">Report Type</label>
+                                <select class="form-input-report" id="reportType">
+                                    <option value="executive">Executive Summary</option>
+                                    <option value="technical">Technical Analysis</option>
+                                    <option value="incident">Incident Report</option>
+                                    <option value="compliance">Compliance Report</option>
+                                </select>
+                            </div>
+                            <div class="form-group-report">
+                                <label class="form-label-report">Start Date</label>
+                                <input type="datetime-local" class="form-input-report" id="reportStart">
+                            </div>
+                            <div class="form-group-report">
+                                <label class="form-label-report">End Date</label>
+                                <input type="datetime-local" class="form-input-report" id="reportEnd">
+                            </div>
+                            <div class="form-group-report">
+                                <label class="form-label-report">Format</label>
+                                <select class="form-input-report" id="reportFormat">
+                                    <option value="pdf">PDF</option>
+                                    <option value="excel">Excel</option>
+                                    <option value="json">JSON</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="btn-generate" onclick="generateReport()">Generate Report</button>
+                    </div>
+
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h2 class="table-title">Generated Reports</h2>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Report Name</th>
+                                    <th>Type</th>
+                                    <th>Period</th>
+                                    <th>Generated</th>
+                                    <th>Size</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportsTable">
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Attack vs Defense Comparison -->
+                <div class="page" id="page-comparison">
+                    <div class="comparison-container">
+                        <div class="comparison-side">
+                            <h2 class="comparison-title">
+                                <span class="side-indicator side-defense"></span>
+                                Defense (Suricata IPS)
+                            </h2>
+                            <div class="timeline" id="defenseTimeline">
+                                <!-- Dynamic defense events -->
+                            </div>
+                        </div>
+                        <div class="comparison-side">
+                            <h2 class="comparison-title">
+                                <span class="side-indicator side-attack"></span>
+                                Attack (HexStrike AI)
+                            </h2>
+                            <div class="timeline" id="attackTimeline">
+                                <!-- Dynamic attack events -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h2 class="chart-title">Attack Success Rate Analysis</h2>
+                        </div>
+                        <canvas id="comparisonChart"></canvas>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Toast Notification -->
+        <div class="toast" id="toast">
+            <div class="toast-icon">!</div>
+            <div class="toast-message" id="toastMessage">Notification</div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    </body>
+</html>
